@@ -1,0 +1,14 @@
+---
+---
+
+@import "{{ site.theme }}";
+
+main {
+  padding-left: 2in;
+  padding-right: 2in;
+}
+
+/* Or if you want to target specific elements */
+h3, p {
+  padding-left: 2in;
+}
