@@ -2,12 +2,3 @@
 ---
 
 @import "{{ site.theme }}";
-
-main {
-  padding-left: 2in;
-  padding-right: 2in;
-}
-
-@media (max-width: 900px) {
-  main { padding-left: 0; padding-right: 0; }
-}

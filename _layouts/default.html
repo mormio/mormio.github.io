@@ -7,20 +7,30 @@
   <link rel="stylesheet" href="{{ "/assets/css/style.css" | relative_url }}">
   <style>
     body {
-      padding-left: 1in;
-      padding-right: 1in;
-      padding-top: 0.8in;
+      font-size: 16px;
+      line-height: 1.6;
     }
-    @media (max-width: 900px) {
-      body { padding-left: 1.1rem; padding-right: 1.1rem; padding-top: 2rem; }
+    main {
+      max-width: 38rem;
+      margin: 0 auto;
+      padding: 4.5rem 1.25rem 6rem;
+    }
+    main h1 {
+      margin: 0 0 1.75rem;
+    }
+    main h2, main h3 {
+      margin: 2.75rem 0 0.75rem;
+    }
+    main p {
+      margin: 0 0 1.15rem;
     }
     .circle-image {
-      width: 150px; /* Controls the size */
+      width: 150px;
       height: 150px;
-      border-radius: 50%; /* Makes it circular */
-      object-fit: cover; /* Ensures the image covers the area without stretching */
+      border-radius: 50%;
+      object-fit: cover;
       display: block;
-      margin: 0 auto; /* Optional: centers the image */
+      margin: 0 auto;
     }
   </style>
 </head>
