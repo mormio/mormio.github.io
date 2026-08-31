@@ -13,7 +13,8 @@ My publications are listed on [Google scholar](https://scholar.google.com/citati
 
 
 
+<img src="/assets/img.jpg?v=2" alt="Morgane Moss" class="portrait" width="120">
+
 ### highlights
 
-NSERC Canada Graduate Scholarship ($120k, 2026) · Mila Excellence Scholarship ($24k, 2024)·
-Microsoft Hackathon category winner, 1st of 479 (2025)
+NSERC Canada Graduate Scholarship ($120k, 2026) · Mila Excellence Scholarship ($24k, 2024) · Microsoft Hackathon category winner, 1st of 479 (2025)
