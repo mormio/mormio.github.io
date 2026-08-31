@@ -3,8 +3,6 @@ layout: default
 title: Morgane Moss
 ---
 
-<img src="/assets/portrait.jpg" alt="Morgane Moss" class="portrait" width="84" height="84">
-
 # morgane moss
 
 We've found each other! I am an applied ML researcher and engineer, specializing in reinforcement learning for reasoning and agentic models. I'm currently a member of technical staff in the [Nous Research](https://hermes-agent.nousresearch.com/) post-training team. 
@@ -15,6 +13,8 @@ I am particularly interested in credit assignment and search for long horizon ta
 My publications are listed on [Google scholar](https://scholar.google.com/citations?user=9U8Cmi4AAAAJ&hl=en).
 
 
+
+<img src="/assets/img.jpg" alt="Morgane Moss" class="portrait" width="120">
 
 ### highlights 
 NSERC Canada Graduate Scholarship ($120k, 2026) · Mila Excellence Scholarship ($24k, 2024)·
