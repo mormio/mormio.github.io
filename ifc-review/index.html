@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BIM task review</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --sans:'IBM Plex Sans',system-ui,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --paper:#fff; --ink:#15171a; --mute:#6e747d; --rule:#15171a;
+  --hair:#d8dbe0; --mark:#15171a; --field:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#0d0f11; --ink:#e6e8ea; --mute:#878d95; --rule:#e6e8ea;
+    --hair:#2b2f34; --mark:#e6e8ea; --field:#15181b;
+  }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font:400 16px/1.5 var(--sans);
+}
+#top{position:fixed;top:0;left:0;height:2px;background:var(--mark);width:0;transition:width .25s;z-index:9}
+
+.sheet{max-width:1000px;margin:0 auto;padding:0 2.5rem 5rem}
+@media (max-width:720px){.sheet{padding:0 1.1rem 4rem}}
+
+header{padding:1.9rem 0 .85rem;border-bottom:1.5px solid var(--rule);margin-bottom:1.8rem}
+.kicker{font:500 10.5px/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--mute)}
+header h1{font:600 20px/1.3 var(--sans);margin:.55rem 0 .45rem;letter-spacing:-.018em}
+header p{margin:0;max-width:52ch;color:var(--mute);font-size:14.5px;line-height:1.6}
+
+/* task block: number in the margin, content in the main column */
+.row{display:grid;grid-template-columns:104px 1fr;gap:0 2.5rem;align-items:start}
+@media (max-width:720px){.row{grid-template-columns:1fr;gap:0}}
+
+.rail{position:sticky;top:2rem}
+@media (max-width:720px){.rail{position:static;margin-bottom:1.4rem;display:flex;gap:1.2rem;align-items:baseline}}
+.num{font:600 34px/1 var(--mono);letter-spacing:-.05em}
+.of{font:400 11px/1 var(--mono);color:var(--mute);margin-top:.45rem}
+.rail dl{margin:1.4rem 0 0;font:400 11px/1.55 var(--mono);color:var(--mute)}
+@media (max-width:720px){.rail dl{margin:0;display:flex;gap:.9rem}}
+.rail dt{display:none}
+.rail dd{margin:0}
+
+.brief{font:500 17.5px/1.42 var(--sans);margin:0 0 1.3rem;max-width:42ch;letter-spacing:-.008em;
+  border-left:2px solid var(--rule);padding-left:.95rem;}
+@media (max-width:720px){.brief{font-size:16.5px}}
+
+details{margin:0 0 1.9rem;border-top:1px solid var(--hair);padding-top:.7rem}
+summary{cursor:pointer;font:400 12.5px/1.4 var(--mono);color:var(--mute);list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::before{content:'+ ';font-weight:500}
+details[open] summary::before{content:'\2212 '}
+summary:hover{color:var(--ink)}
+table{border-collapse:collapse;width:100%;max-width:520px;margin:1rem 0 .8rem;
+  font:400 12px/1.5 var(--mono)}
+th{text-align:left;font-weight:500;color:var(--mute);padding:0 1.2rem .35rem 0;border-bottom:1px solid var(--hair)}
+td{padding:.28rem 1.2rem .28rem 0;border-bottom:1px solid var(--hair)}
+td.n,th.n{text-align:right;padding-right:0}
+.tags{font:400 12px/1.9 var(--mono);color:var(--mute);max-width:520px}
+.tags i{font-style:normal;white-space:nowrap}
+.tags i:not(:last-child)::after{content:' · ';color:var(--hair)}
+
+.q{margin:0 0 1.65rem;max-width:44ch}
+.q > h3{font:590 14.5px/1.4 var(--sans);letter-spacing:-.006em;margin:0 0 .15rem;display:flex;gap:.7rem}
+.q > h3 em{font:500 12px/1.6 var(--mono);font-style:normal;color:var(--mute);flex:none}
+.hint{display:block;color:var(--mute);font-size:13px;line-height:1.5;margin:.25rem 0 .8rem 1.9rem}
+.opts{margin-left:1.9rem;border-top:1px solid var(--hair)}
+label.opt{display:flex;gap:.7rem;align-items:baseline;padding:.5rem 0;border-bottom:1px solid var(--hair);cursor:pointer}
+label.opt input{position:absolute;opacity:0;pointer-events:none}
+label.opt .box{flex:none;width:9px;height:9px;border:1.5px solid var(--mute);margin-top:.35rem;transition:.12s}
+label.opt:hover .box{border-color:var(--ink)}
+label.opt.sel .box{background:var(--mark);border-color:var(--mark)}
+label.opt.sel .t{font-weight:600}
+.t{font-size:14.5px;line-height:1.45}
+.d{display:block;color:var(--mute);font-size:12.5px;line-height:1.45;margin-top:.12rem}
+textarea,input[type=text]{
+  display:block;width:100%;margin-left:1.9rem;max-width:calc(46ch - 1.9rem);
+  background:var(--field);color:var(--ink);border:1px solid var(--hair);border-radius:0;
+  font:400 14px/1.55 var(--sans);padding:.6rem .7rem}
+textarea{min-height:76px;resize:vertical}
+textarea:focus,input[type=text]:focus{outline:none;border-color:var(--mark)}
+input[type=text]{max-width:24ch}
+
+nav{display:flex;justify-content:space-between;align-items:baseline;
+  border-top:1.5px solid var(--rule);padding-top:1rem;margin-top:1rem}
+nav button{background:none;border:0;padding:0;cursor:pointer;color:var(--ink);
+  font:500 13.5px/1 var(--mono);letter-spacing:.02em}
+nav button:disabled{color:var(--hair);cursor:default}
+nav button:not(:disabled):hover{color:var(--mark)}
+nav .tally{font:400 11px/1 var(--mono);color:var(--mute)}
+
+.end{max-width:46ch}
+.end h2{font:500 24px/1.3 var(--sans);margin:0 0 .5rem}
+.end p{color:var(--mute);font-size:14px;line-height:1.6;margin:0 0 1.8rem}
+.map{display:flex;flex-wrap:wrap;gap:4px;margin:0 0 2rem}
+.map b{width:24px;height:24px;display:grid;place-items:center;cursor:pointer;
+  font:400 11px/1 var(--mono);color:var(--mute);border:1px solid var(--hair)}
+.map b.f{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.map b:hover{border-color:var(--mark)}
+button.get{background:var(--ink);color:var(--paper);border:0;padding:.75rem 1.5rem;
+  font:500 13.5px/1 var(--mono);cursor:pointer;letter-spacing:.02em}
+button.get:hover{background:var(--mark)}
+.fine{font:400 12px/1.6 var(--mono);color:var(--mute);margin-top:1rem}
+</style>
+</head>
+<body>
+<div id="top"></div>
+<div class="sheet">
+  <header>
+    <div class="kicker">IFC model editing</div>
+    <h1>Task review</h1>
+    <p>Thirty-six proposed edits to building models. The question is is whether each one is stated clearly enough to act on, and how many different results you would accept as correct. ETA 20 to 30 minutes. Answers save in this browser as you go. Do NOT judge based on task difficulty. Think carefully and provide high quality answers.</p>
+  </header>
+  <div id="app"></div>
+  <nav>
+    <button id="prev">&larr; previous</button>
+    <span class="tally" id="cnt"></span>
+    <button id="next">next &rarr;</button>
+  </nav>
+</div>
+
+<script id="payload" type="application/json">[{"id":"A4-rename-storey","model":"sixty5/facade.ifc","instruction":"Rename the storey \"00 begane grond\" to \"00 ground floor\".","context":{"schema":"IFC2X3","units":"millimetre","storeys":[{"name":"00 begane grond","elevation":0.0,"elements":26},{"name":"01 eerste verdieping","elevation":4500.0,"elements":65},{"name":"02 tweede verdieping","elevation":7700.0,"elements":66},{"name":"03 derde verdieping","elevation":10900.0,"elements":66},{"name":"04 vierde verdieping","elevation":14100.0,"elements":66},{"name":"05 vijfde verdieping","elevation":17300.0,"elements":66},{"name":"06 zesde verdieping","elevation":20500.0,"elements":66},{"name":"07 zevende verdieping","elevation":23700.0,"elements":74},{"name":"08 achtste verdieping","elevation":26900.0,"elements":72},{"name":"09 negende verdieping","elevation":30100.0,"elements":67},{"name":"10 tiende verdieping","elevation":33300.0,"elements":66},{"name":"11 elfde verdieping","elevation":36500.0,"elements":61},{"name":"12 twaalfde verdieping","elevation":39700.0,"elements":68},{"name":"13 dertiende verdieping","elevation":42900.0,"elements":57},{"name":"14 veertiende verdieping","elevation":46100.0,"elements":37},{"name":"15 vijftiende verdieping","elevation":49300.0,"elements":55},{"name":"16 zestiende verdieping","elevation":52500.0,"elements":56},{"name":"17 dak","elevation":55700.0,"elements":21}],"counts":{"IfcWall":353,"IfcBuildingElementProxy":702},"total_products":1075},"n":1},{"id":"F3-ordinal-boundary","model":"sixty5/facade.ifc","instruction":"Remove the facade brackets from every floor above the tenth.","context":{"schema":"IFC2X3","units":"millimetre","storeys":[{"name":"00 begane grond","elevation":0.0,"elements":26},{"name":"01 eerste verdieping","elevation":4500.0,"elements":65},{"name":"02 tweede verdieping","elevation":7700.0,"elements":66},{"name":"03 derde verdieping","elevation":10900.0,"elements":66},{"name":"04 vierde verdieping","elevation":14100.0,"elements":66},{"name":"05 vijfde verdieping","elevation":17300.0,"elements":66},{"name":"06 zesde verdieping","elevation":20500.0,"elements":66},{"name":"07 zevende verdieping","elevation":23700.0,"elements":74},{"name":"08 achtste verdieping","elevation":26900.0,"elements":72},{"name":"09 negende verdieping","elevation":30100.0,"elements":67},{"name":"10 tiende verdieping","elevation":33300.0,"elements":66},{"name":"11 elfde verdieping","elevation":36500.0,"elements":61},{"name":"12 twaalfde verdieping","elevation":39700.0,"elements":68},{"name":"13 dertiende verdieping","elevation":42900.0,"elements":57},{"name":"14 veertiende verdieping","elevation":46100.0,"elements":37},{"name":"15 vijftiende verdieping","elevation":49300.0,"elements":55},{"name":"16 zestiende verdieping","elevation":52500.0,"elements":56},{"name":"17 dak","elevation":55700.0,"elements":21}],"counts":{"IfcWall":353,"IfcBuildingElementProxy":702},"total_products":1075},"n":2},{"id":"B2-add-door-in-wall","model":"fantasy_residential_building_1/arc.ifc","instruction":"Add a single-leaf door, 0.9 m wide and 2.1 m high, into an existing interior wall on the ground floor.","context":{"schema":"IFC4","units":"metre","storeys":[{"name":"Ground Floor","elevation":0.0,"elements":124},{"name":"First Floor","elevation":3.4,"elements":114},{"name":"Second Floor","elevation":6.800000000000003,"elements":104},{"name":"Roof","elevation":10.2,"elements":3}],"counts":{"IfcWall":104,"IfcDoor":101,"IfcWindow":10,"IfcSlab":25,"IfcColumn":28,"IfcBeam":5,"IfcStair":5,"IfcRailing":31,"IfcSpace":57,"IfcBuildingElementProxy":20,"IfcCovering":2,"IfcRoof":2},"total_products":1055},"n":3},{"id":"G14-danish-ground-floor","model":"molio/arc.ifc","instruction":"Add an internal wall on the ground floor.","context":{"schema":"IFC2X3","units":"millimetre","storeys":[{"name":"Fundament","elevation":-4400.0,"elements":4},{"name":"K\u00e6lder","elevation":-3500.0,"elements":70},{"name":"Grundplan","elevation":0.0,"elements":0},{"name":"1. Sal","elevation":3500.0,"elements":0},{"name":"2. Sal","elevation":7000.0,"elements":0},{"name":"3. Sal","elevation":10500.0,"elements":0},{"name":"4. Sal","elevation":14000.0,"elements":0},{"name":"5. Sal","elevation":17500.0,"elements":0},{"name":"6. sal","elevation":20644.0,"elements":0},{"name":"Tag","elevation":23644.0,"elements":0}],"counts":{"IfcWall":189,"IfcDoor":119,"IfcSlab":53,"IfcColumn":14,"IfcBeam":7,"IfcStair":549,"IfcRailing":2119,"IfcSpace":23,"IfcFurnishingElement":39,"IfcBuildingElementProxy":1},"total_products":3210},"n":4},{"id":"E2-external-wall-flag","model":"schependomlaan/arc.ifc","instruction":"Mark the exterior walls as external in their property sets.","context":{"schema":"IFC2X3","units":"millimetre","storeys":[{"name":"Storey-1","elevation":0.0,"elements":3505}],"counts":{"IfcWall":648,"IfcDoor":205,"IfcWindow":259,"IfcSlab":279,"IfcColumn":23,"IfcBeam":174,"IfcStair":9,"IfcRailing":90,"IfcBuildingElementProxy":86,"IfcCovering":1214},"total_products":3508},"n":5},{"id":"G7-clear-mumti","model":"fantasy_hotel_1/arc.ifc","instruction":"Clear everything off the Mumti level.","context":{"schema":"IFC4","units":"metre","storeys":[{"name":"GROUND FLOOR","elevation":0.0,"elements":307},{"name":"FIRST FLOOR","elevation":4.9,"elements":230},{"name":"L3","elevation":9.800000000000205,"elements":82},{"name":"Mumti","elevation":11.800000000000205,"elements":2}],"counts":{"IfcWall":53,"IfcDoor":25,"IfcWindow":73,"IfcSlab":49,"IfcColumn":39,"IfcBeam":117,"IfcStair":4,"IfcRailing":11,"IfcSpace":26,"IfcBuildingElementProxy":214},"total_products":1082},"n":6},{"id":"A2-door-height-metres","model":"city_house_munich/arc.ifc","instruction":"Set the overall height of every door in the building to 2.1 metres.","context":{"schema":"IFC4X3","units":"metre","storeys":[{"name":"0. Foundation","elevation":-3.2399999999999998,"elements":3},{"name":"1. Kellergeschoss","elevation":-2.82,"elements":20},{"name":"2. Erdgeschoss","elevation":-7.722230498288531e-14,"elements":27},{"name":"3. Obergeschoss","elevation":2.8899999999999224,"elements":29},{"name":"4. Dachgeschoss","elevation":5.709999999999918,"elements":20},{"name":"Foundation","elevation":-3.2399999999999998,"elements":1},{"name":"Kellergeschoss","elevation":-2.82,"elements":4},{"name":"Erdgeschoss","elevation":-7.722230498288531e-14,"elements":10},{"name":"Obergeschoss","elevation":2.8899999999999224,"elements":4},{"name":"Dachgeschoss","elevation":5.709999999999918,"elements":3},{"name":"Foundation","elevation":-3.2399999999999998,"elements":1},{"name":"Kellergeschoss","elevation":-2.82,"elements":4},{"name":"Erdgeschoss","elevation":-7.722230498288531e-14,"elements":10},{"name":"Obergeschoss","elevation":2.8899999999999224,"elements":4},{"name":"Dachgeschoss","elevation":5.709999999999918,"elements":3}],"counts":{"IfcWall":83,"IfcDoor":16,"IfcWindow":13,"IfcSlab":19,"IfcStair":3,"IfcRailing":5,"IfcSpace":19,"IfcBuildingElementProxy":2,"IfcCovering":1,"IfcRoof":3},"total_products":293},"n":7},{"id":"A1-door-height-mm","model":"fantasy_hotel_2/arc.ifc","instruction":"Set the overall height of every door on the GROUND FLOOR to 2100 mm.","context":{"schema":"IFC4","units":"millimetre","storeys":[{"name":"GROUND FLOOR","elevation":0.0,"elements":264},{"name":"FIRST FLOOR","elevation":3799.9999999999995,"elements":359},{"name":"2ND FLOOR","elevation":7600.000000000203,"elements":322},{"name":"3RD FLOOR","elevation":11400.000000000202,"elements":127},{"name":"4RTH FLOOR","elevation":15200.000000000202,"elements":9},{"name":"5TH FLOOR","elevation":19000.000000000204,"elements":1}],"counts":{"IfcWall":118,"IfcDoor":72,"IfcWindow":190,"IfcSlab":78,"IfcColumn":86,"IfcBeam":205,"IfcStair":13,"IfcRailing":32,"IfcSpace":20,"IfcBuildingElementProxy":200},"total_products":1571},"n":8},{"id":"B3-add-space","model":"fantasy_office_building_3/arc.ifc","instruction":"Add a new space named \"Server Room\" on the second floor.","context":{"schema":"IFC4","units":"metre","storeys":[{"name":"EG","elevation":0.0,"elements":118},{"name":"OG1","elevation":3.6999999999999997,"elements":135},{"name":"OK OG2","elevation":7.3999999999999995,"elements":130},{"name":"OK OG3","elevation":11.1,"elements":130},{"name":"OK OG4","elevation":14.799999999999999,"elements":108},{"name":"OK OG5","elevation":18.5,"elements":10}],"counts":{"IfcWall":223,"IfcDoor":75,"IfcWindow":167,"IfcSlab":17,"IfcColumn":20,"IfcBeam":60,"IfcStair":10,"IfcRailing":20,"IfcSpace":87,"IfcRoof":4},"total_products":1460},"n":9},{"id":"C2-delete-furniture","model":"fantasy_hotel_2/arc.ifc","instruction":"Remove all furniture from the 2ND FLOOR.","context":{"schema":"IFC4","units":"millimetre","storeys":[{"name":"GROUND FLOOR","elevation":0.0,"elements":264},{"name":"FIRST FLOOR","elevation":3799.9999999999995,"elements":359},{"name":"2ND FLOOR","elevation":7600.000000000203,"elements":322},{"name":"3RD FLOOR","elevation":11400.000000000202,"elements":127},{"name":"4RTH FLOOR","elevation":15200.000000000202,"elements":9},{"name":"5TH FLOOR","elevation":19000.000000000204,"elements":1}],"counts":{"IfcWall":118,"IfcDoor":72,"IfcWindow":190,"IfcSlab":78,"IfcColumn":86,"IfcBeam":205,"IfcStair":13,"IfcRailing":32,"IfcSpace":20,"IfcBuildingElementProxy":200},"total_products":1571},"n":10},{"id":"G8-retype-dampers","model":"digital_hub/ventilation.ifc","instruction":"All 18 dampers should use the same type. Assign them all to the type that is currently most common among them.","context":{"schema":"IFC4","units":"millimetre","storeys":[{"name":"B01_OKRD","elevation":-3370.0,"elements":102},{"name":"E00_OKRD","elevation":-150.0,"elements":616},{"name":"E01_OKRD","elevation":3750.0,"elements":592}],"counts":{},"total_products":3971},"n":11},{"id":"G6-remove-balustrades","model":"molio/arc.ifc","instruction":"Remove the balustrades from the stairwell.","context":{"schema":"IFC2X3","units":"millimetre","storeys":[{"name":"Fundament","elevation":-4400.0,"elements":4},{"name":"K\u00e6lder","elevation":-3500.0,"elements":70},{"name":"Grundplan","elevation":0.0,"elements":0},{"name":"1. Sal","elevation":3500.0,"elements":0},{"name":"2. Sal","elevation":7000.0,"elements":0},{"name":"3. Sal","elevation":10500.0,"elements":0},{"name":"4. Sal","elevation":14000.0,"elements":0},{"name":"5. Sal","elevation":17500.0,"elements":0},{"name":"6. sal","elevation":20644.0,"elements":0},{"name":"Tag","elevation":23644.0,"elements":0}],"counts":{"IfcWall":189,"IfcDoor":119,"IfcSlab":53,"IfcColumn":14,"IfcBeam":7,"IfcStair":549,"IfcRailing":2119,"IfcSpace":23,"IfcFurnishingElement":39,"IfcBuildingElementProxy":1},"total_products":3210},"n":12},{"id":"C1-delete-window","model":"fantasy_hotel_2/arc.ifc","instruction":"Delete one window from the FIRST FLOOR.","context":{"schema":"IFC4","units":"millimetre","storeys":[{"name":"GROUND FLOOR","elevation":0.0,"elements":264},{"name":"FIRST FLOOR","elevation":3799.9999999999995,"elements":359},{"name":"2ND FLOOR","elevation":7600.000000000203,"elements":322},{"name":"3RD FLOOR","elevation":11400.000000000202,"elements":127},{"name":"4RTH FLOOR","elevation":15200.000000000202,"elements":9},{"name":"5TH FLOOR","elevation":19000.000000000204,"elements":1}],"counts":{"IfcWall":118,"IfcDoor":72,"IfcWindow":190,"IfcSlab":78,"IfcColumn":86,"IfcBeam":205,"IfcStair":13,"IfcRailing":32,"IfcSpace":20,"IfcBuildingElementProxy":200},"total_products":1571},"n":13},{"id":"G3-add-air-terminal","model":"digital_hub/ventilation.ifc","instruction":"Add a supply air terminal in the main corridor on level E01_OKRD.","context":{"schema":"IFC4","units":"millimetre","storeys":[{"name":"B01_OKRD","elevation":-3370.0,"elements":102},{"name":"E00_OKRD","elevation":-150.0,"elements":616},{"name":"E01_OKRD","elevation":3750.0,"elements":592}],"counts":{},"total_products":3971},"n":14},{"id":"B1-add-wall","model":"digital_hub/arc.ifc","instruction":"Add a new interior partition wall on storey E01_OKRD, 4 m long and 3 m high, running north-south.","context":{"schema":"IFC4","units":"metre","storeys":[{"name":"B01_OKRD","elevation":-3.37,"elements":63},{"name":"E00_OKRD","elevation":-0.15,"elements":314},{"name":"E01_OKRD","elevation":3.75,"elements":208}],"counts":{"IfcWall":178,"IfcDoor":64,"IfcWindow":47,"IfcSlab":23,"IfcColumn":62,"IfcBeam":14,"IfcStair":5,"IfcRailing":13,"IfcSpace":64,"IfcBuildingElementProxy":150,"IfcCovering":38,"IfcRoof":3},"total_products":1026},"n":15},{"id":"G2-bigger-columns","model":"sixty5/str.ifc","instruction":"Make the columns on the lower floors bigger.","context":{"schema":"IFC2X3","units":"millimetre","storeys":[{"name":"00 begane grond","elevation":-5.41433564649196e-13,"elements":328},{"name":"01 eerste verdieping","elevation":4500.00000000004,"elements":59},{"name":"02 tweede verdieping","elevation":7700.00000000004,"elements":82},{"name":"03 derde verdieping","elevation":10900.0,"elements":82},{"name":"04 vierde verdieping","elevation":14100.0,"elements":74},{"name":"05 vijfde verdieping","elevation":17300.0,"elements":74},{"name":"06 zesde verdieping","elevation":20500.0,"elements":74},{"name":"07 zevende verdieping","elevation":23700.0,"elements":77},{"name":"08 achtste verdieping","elevation":26900.0,"elements":77},{"name":"09 negende verdieping","elevation":30100.0000000003,"elements":67},{"name":"10 tiende verdieping","elevation":33300.0000000003,"elements":67},{"name":"11 elfde verdieping","elevation":36500.0000000003,"elements":55},{"name":"12 twaalfde verdieping","elevation":39700.0000000003,"elements":55},{"name":"13 dertiende verdieping","elevation":42900.0000000003,"elements":53},{"name":"14 veertiende verdieping","elevation":46100.0000000003,"elements":39},{"name":"15 vijftiende verdieping","elevation":49300.0000000027,"elements":45},{"name":"16 zestiende verdieping","elevation":52500.0000000003,"elements":30},{"name":"17 zeventiende verdieping","elevation":55700.0000000003,"elements":43},{"name":"18 achttiende verdieping","elevation":63000.0000000032,"elements":1}],"counts":{"IfcWall":3,"IfcSlab":70,"IfcColumn":387,"IfcBeam":354,"IfcBuildingElementProxy":1},"total_products":2687},"n":16},{"id":"B4-add-column-grid","model":"fantasy_office_building_3/arc.ifc","instruction":"Add a row of four structural columns along the north edge of the ground floor, evenly spaced.","context":{"schema":"IFC4","units":"metre","storeys":[{"name":"EG","elevation":0.0,"elements":118},{"name":"OG1","elevation":3.6999999999999997,"elements":135},{"name":"OK OG2","elevation":7.3999999999999995,"elements":130},{"name":"OK OG3","elevation":11.1,"elements":130},{"name":"OK OG4","elevation":14.799999999999999,"elements":108},{"name":"OK OG5","elevation":18.5,"elements":10}],"counts":{"IfcWall":223,"IfcDoor":75,"IfcWindow":167,"IfcSlab":17,"IfcColumn":20,"IfcBeam":60,"IfcStair":10,"IfcRailing":20,"IfcSpace":87,"IfcRoof":4},"total_products":1460},"n":17},{"id":"E3-german-pset-names","model":"digital_hub/arc.ifc","instruction":"Add a property \"Bauteilnummer\" with value \"DH-001\" to every column, in the existing \"ID-Daten\" property set.","context":{"schema":"IFC4","units":"metre","storeys":[{"name":"B01_OKRD","elevation":-3.37,"elements":63},{"name":"E00_OKRD","elevation":-0.15,"elements":314},{"name":"E01_OKRD","elevation":3.75,"elements":208}],"counts":{"IfcWall":178,"IfcDoor":64,"IfcWindow":47,"IfcSlab":23,"IfcColumn":62,"IfcBeam":14,"IfcStair":5,"IfcRailing":13,"IfcSpace":64,"IfcBuildingElementProxy":150,"IfcCovering":38,"IfcRoof":3},"total_products":1026},"n":18},{"id":"C3-delete-storey-contents","model":"sixty5/facade.ifc","instruction":"The seventeenth floor (\"17 dak\") is being removed from the design. Delete everything on it, but keep the storey itself.","context":{"schema":"IFC2X3","units":"millimetre","storeys":[{"name":"00 begane grond","elevation":0.0,"elements":26},{"name":"01 eerste verdieping","elevation":4500.0,"elements":65},{"name":"02 tweede verdieping","elevation":7700.0,"elements":66},{"name":"03 derde verdieping","elevation":10900.0,"elements":66},{"name":"04 vierde verdieping","elevation":14100.0,"elements":66},{"name":"05 vijfde verdieping","elevation":17300.0,"elements":66},{"name":"06 zesde verdieping","elevation":20500.0,"elements":66},{"name":"07 zevende verdieping","elevation":23700.0,"elements":74},{"name":"08 achtste verdieping","elevation":26900.0,"elements":72},{"name":"09 negende verdieping","elevation":30100.0,"elements":67},{"name":"10 tiende verdieping","elevation":33300.0,"elements":66},{"name":"11 elfde verdieping","elevation":36500.0,"elements":61},{"name":"12 twaalfde verdieping","elevation":39700.0,"elements":68},{"name":"13 dertiende verdieping","elevation":42900.0,"elements":57},{"name":"14 veertiende verdieping","elevation":46100.0,"elements":37},{"name":"15 vijftiende verdieping","elevation":49300.0,"elements":55},{"name":"16 zestiende verdieping","elevation":52500.0,"elements":56},{"name":"17 dak","elevation":55700.0,"elements":21}],"counts":{"IfcWall":353,"IfcBuildingElementProxy":702},"total_products":1075},"n":19},{"id":"D1-move-element-storey","model":"digital_hub/arc.ifc","instruction":"Move the stairs currently on B01_OKRD up to E00_OKRD.","context":{"schema":"IFC4","units":"metre","storeys":[{"name":"B01_OKRD","elevation":-3.37,"elements":63},{"name":"E00_OKRD","elevation":-0.15,"elements":314},{"name":"E01_OKRD","elevation":3.75,"elements":208}],"counts":{"IfcWall":178,"IfcDoor":64,"IfcWindow":47,"IfcSlab":23,"IfcColumn":62,"IfcBeam":14,"IfcStair":5,"IfcRailing":13,"IfcSpace":64,"IfcBuildingElementProxy":150,"IfcCovering":38,"IfcRoof":3},"total_products":1026},"n":20},{"id":"G11-fan-pset-property","model":"digital_hub/ventilation.ifc","instruction":"Add a property \"Wartungsintervall\" with value \"12 Monate\" to the HLS property set on both fans.","context":{"schema":"IFC4","units":"millimetre","storeys":[{"name":"B01_OKRD","elevation":-3370.0,"elements":102},{"name":"E00_OKRD","elevation":-150.0,"elements":616},{"name":"E01_OKRD","elevation":3750.0,"elements":592}],"counts":{},"total_products":3971},"n":21},{"id":"F4-no-op-instruction","model":"schependomlaan/arc.ifc","instruction":"Move all windows on the second floor 100 mm to the left.","context":{"schema":"IFC2X3","units":"millimetre","storeys":[{"name":"Storey-1","elevation":0.0,"elements":3505}],"counts":{"IfcWall":648,"IfcDoor":205,"IfcWindow":259,"IfcSlab":279,"IfcColumn":23,"IfcBeam":174,"IfcStair":9,"IfcRailing":90,"IfcBuildingElementProxy":86,"IfcCovering":1214},"total_products":3508},"n":22},{"id":"D3-add-classification","model":"city_house_munich/arc.ifc","instruction":"Classify all load-bearing walls with Uniclass code \"Ss_25_10_30\".","context":{"schema":"IFC4X3","units":"metre","storeys":[{"name":"0. Foundation","elevation":-3.2399999999999998,"elements":3},{"name":"1. Kellergeschoss","elevation":-2.82,"elements":20},{"name":"2. Erdgeschoss","elevation":-7.722230498288531e-14,"elements":27},{"name":"3. Obergeschoss","elevation":2.8899999999999224,"elements":29},{"name":"4. Dachgeschoss","elevation":5.709999999999918,"elements":20},{"name":"Foundation","elevation":-3.2399999999999998,"elements":1},{"name":"Kellergeschoss","elevation":-2.82,"elements":4},{"name":"Erdgeschoss","elevation":-7.722230498288531e-14,"elements":10},{"name":"Obergeschoss","elevation":2.8899999999999224,"elements":4},{"name":"Dachgeschoss","elevation":5.709999999999918,"elements":3},{"name":"Foundation","elevation":-3.2399999999999998,"elements":1},{"name":"Kellergeschoss","elevation":-2.82,"elements":4},{"name":"Erdgeschoss","elevation":-7.722230498288531e-14,"elements":10},{"name":"Obergeschoss","elevation":2.8899999999999224,"elements":4},{"name":"Dachgeschoss","elevation":5.709999999999918,"elements":3}],"counts":{"IfcWall":83,"IfcDoor":16,"IfcWindow":13,"IfcSlab":19,"IfcStair":3,"IfcRailing":5,"IfcSpace":19,"IfcBuildingElementProxy":2,"IfcCovering":1,"IfcRoof":3},"total_products":293},"n":23},{"id":"G13-door-fire-ratings","model":"molio/arc.ifc","instruction":"Record the fire ratings for the doors.","context":{"schema":"IFC2X3","units":"millimetre","storeys":[{"name":"Fundament","elevation":-4400.0,"elements":4},{"name":"K\u00e6lder","elevation":-3500.0,"elements":70},{"name":"Grundplan","elevation":0.0,"elements":0},{"name":"1. Sal","elevation":3500.0,"elements":0},{"name":"2. Sal","elevation":7000.0,"elements":0},{"name":"3. Sal","elevation":10500.0,"elements":0},{"name":"4. Sal","elevation":14000.0,"elements":0},{"name":"5. Sal","elevation":17500.0,"elements":0},{"name":"6. sal","elevation":20644.0,"elements":0},{"name":"Tag","elevation":23644.0,"elements":0}],"counts":{"IfcWall":189,"IfcDoor":119,"IfcSlab":53,"IfcColumn":14,"IfcBeam":7,"IfcStair":549,"IfcRailing":2119,"IfcSpace":23,"IfcFurnishingElement":39,"IfcBuildingElementProxy":1},"total_products":3210},"n":24},{"id":"G10-consistent-storey-names","model":"fantasy_hotel_1/arc.ifc","instruction":"Make the storey naming consistent.","context":{"schema":"IFC4","units":"metre","storeys":[{"name":"GROUND FLOOR","elevation":0.0,"elements":307},{"name":"FIRST FLOOR","elevation":4.9,"elements":230},{"name":"L3","elevation":9.800000000000205,"elements":82},{"name":"Mumti","elevation":11.800000000000205,"elements":2}],"counts":{"IfcWall":53,"IfcDoor":25,"IfcWindow":73,"IfcSlab":49,"IfcColumn":39,"IfcBeam":117,"IfcStair":4,"IfcRailing":11,"IfcSpace":26,"IfcBuildingElementProxy":214},"total_products":1082},"n":25},{"id":"G5-delete-all-furniture","model":"fantasy_office_building_1/arc.ifc","instruction":"Delete all furniture from the model.","context":{"schema":"IFC4","units":"metre","storeys":[{"name":"EG","elevation":0.0,"elements":80},{"name":"OG1","elevation":4.799999999999999,"elements":40},{"name":"OG2","elevation":9.599999999999998,"elements":54},{"name":"OG3","elevation":14.399999999999999,"elements":52},{"name":"OG4","elevation":19.199999999999996,"elements":30}],"counts":{"IfcWall":64,"IfcDoor":34,"IfcWindow":42,"IfcSlab":18,"IfcColumn":34,"IfcBeam":8,"IfcStair":14,"IfcRailing":28,"IfcSpace":44,"IfcBuildingElementProxy":10,"IfcRoof":4},"total_products":1846},"n":26},{"id":"G4-add-footing","model":"sixty5/str.ifc","instruction":"Add a pad footing beneath each column on the ground floor that does not already have one.","context":{"schema":"IFC2X3","units":"millimetre","storeys":[{"name":"00 begane grond","elevation":-5.41433564649196e-13,"elements":328},{"name":"01 eerste verdieping","elevation":4500.00000000004,"elements":59},{"name":"02 tweede verdieping","elevation":7700.00000000004,"elements":82},{"name":"03 derde verdieping","elevation":10900.0,"elements":82},{"name":"04 vierde verdieping","elevation":14100.0,"elements":74},{"name":"05 vijfde verdieping","elevation":17300.0,"elements":74},{"name":"06 zesde verdieping","elevation":20500.0,"elements":74},{"name":"07 zevende verdieping","elevation":23700.0,"elements":77},{"name":"08 achtste verdieping","elevation":26900.0,"elements":77},{"name":"09 negende verdieping","elevation":30100.0000000003,"elements":67},{"name":"10 tiende verdieping","elevation":33300.0000000003,"elements":67},{"name":"11 elfde verdieping","elevation":36500.0000000003,"elements":55},{"name":"12 twaalfde verdieping","elevation":39700.0000000003,"elements":55},{"name":"13 dertiende verdieping","elevation":42900.0000000003,"elements":53},{"name":"14 veertiende verdieping","elevation":46100.0000000003,"elements":39},{"name":"15 vijftiende verdieping","elevation":49300.0000000027,"elements":45},{"name":"16 zestiende verdieping","elevation":52500.0000000003,"elements":30},{"name":"17 zeventiende verdieping","elevation":55700.0000000003,"elements":43},{"name":"18 achttiende verdieping","elevation":63000.0000000032,"elements":1}],"counts":{"IfcWall":3,"IfcSlab":70,"IfcColumn":387,"IfcBeam":354,"IfcBuildingElementProxy":1},"total_products":2687},"n":27},{"id":"F1-duplicate-storey-names","model":"city_house_munich/arc.ifc","instruction":"Add an interior wall to the Erdgeschoss.","context":{"schema":"IFC4X3","units":"metre","storeys":[{"name":"0. Foundation","elevation":-3.2399999999999998,"elements":3},{"name":"1. Kellergeschoss","elevation":-2.82,"elements":20},{"name":"2. Erdgeschoss","elevation":-7.722230498288531e-14,"elements":27},{"name":"3. Obergeschoss","elevation":2.8899999999999224,"elements":29},{"name":"4. Dachgeschoss","elevation":5.709999999999918,"elements":20},{"name":"Foundation","elevation":-3.2399999999999998,"elements":1},{"name":"Kellergeschoss","elevation":-2.82,"elements":4},{"name":"Erdgeschoss","elevation":-7.722230498288531e-14,"elements":10},{"name":"Obergeschoss","elevation":2.8899999999999224,"elements":4},{"name":"Dachgeschoss","elevation":5.709999999999918,"elements":3},{"name":"Foundation","elevation":-3.2399999999999998,"elements":1},{"name":"Kellergeschoss","elevation":-2.82,"elements":4},{"name":"Erdgeschoss","elevation":-7.722230498288531e-14,"elements":10},{"name":"Obergeschoss","elevation":2.8899999999999224,"elements":4},{"name":"Dachgeschoss","elevation":5.709999999999918,"elements":3}],"counts":{"IfcWall":83,"IfcDoor":16,"IfcWindow":13,"IfcSlab":19,"IfcStair":3,"IfcRailing":5,"IfcSpace":19,"IfcBuildingElementProxy":2,"IfcCovering":1,"IfcRoof":3},"total_products":293},"n":28},{"id":"E1-fire-rating-psets","model":"fantasy_residential_building_1/arc.ifc","instruction":"Give every door a fire rating of 30 minutes.","context":{"schema":"IFC4","units":"metre","storeys":[{"name":"Ground Floor","elevation":0.0,"elements":124},{"name":"First Floor","elevation":3.4,"elements":114},{"name":"Second Floor","elevation":6.800000000000003,"elements":104},{"name":"Roof","elevation":10.2,"elements":3}],"counts":{"IfcWall":104,"IfcDoor":101,"IfcWindow":10,"IfcSlab":25,"IfcColumn":28,"IfcBeam":5,"IfcStair":5,"IfcRailing":31,"IfcSpace":57,"IfcBuildingElementProxy":20,"IfcCovering":2,"IfcRoof":2},"total_products":1055},"n":29},{"id":"A3-transposed-door-dims","model":"digital_hub/arc.ifc","instruction":"Some doors in this model have their height and width recorded the wrong way round. Find them and correct them.","context":{"schema":"IFC4","units":"metre","storeys":[{"name":"B01_OKRD","elevation":-3.37,"elements":63},{"name":"E00_OKRD","elevation":-0.15,"elements":314},{"name":"E01_OKRD","elevation":3.75,"elements":208}],"counts":{"IfcWall":178,"IfcDoor":64,"IfcWindow":47,"IfcSlab":23,"IfcColumn":62,"IfcBeam":14,"IfcStair":5,"IfcRailing":13,"IfcSpace":64,"IfcBuildingElementProxy":150,"IfcCovering":38,"IfcRoof":3},"total_products":1026},"n":30},{"id":"G1-rename-air-terminals","model":"digital_hub/ventilation.ifc","instruction":"Rename every air terminal so its name begins with \"AT-\", keeping the rest of the existing name unchanged.","context":{"schema":"IFC4","units":"millimetre","storeys":[{"name":"B01_OKRD","elevation":-3370.0,"elements":102},{"name":"E00_OKRD","elevation":-150.0,"elements":616},{"name":"E01_OKRD","elevation":3750.0,"elements":592}],"counts":{},"total_products":3971},"n":31},{"id":"G9-reassign-room-to-storey","model":"fantasy_hotel_1/arc.ifc","instruction":"The 9 elements currently assigned to room 102 should be attached directly to the FIRST FLOOR storey instead.","context":{"schema":"IFC4","units":"metre","storeys":[{"name":"GROUND FLOOR","elevation":0.0,"elements":307},{"name":"FIRST FLOOR","elevation":4.9,"elements":230},{"name":"L3","elevation":9.800000000000205,"elements":82},{"name":"Mumti","elevation":11.800000000000205,"elements":2}],"counts":{"IfcWall":53,"IfcDoor":25,"IfcWindow":73,"IfcSlab":49,"IfcColumn":39,"IfcBeam":117,"IfcStair":4,"IfcRailing":11,"IfcSpace":26,"IfcBuildingElementProxy":214},"total_products":1082},"n":32},{"id":"F2-implicit-code-requirement","model":"fantasy_hotel_2/arc.ifc","instruction":"Make the ground floor entrance doors wheelchair accessible.","context":{"schema":"IFC4","units":"millimetre","storeys":[{"name":"GROUND FLOOR","elevation":0.0,"elements":264},{"name":"FIRST FLOOR","elevation":3799.9999999999995,"elements":359},{"name":"2ND FLOOR","elevation":7600.000000000203,"elements":322},{"name":"3RD FLOOR","elevation":11400.000000000202,"elements":127},{"name":"4RTH FLOOR","elevation":15200.000000000202,"elements":9},{"name":"5TH FLOOR","elevation":19000.000000000204,"elements":1}],"counts":{"IfcWall":118,"IfcDoor":72,"IfcWindow":190,"IfcSlab":78,"IfcColumn":86,"IfcBeam":205,"IfcStair":13,"IfcRailing":32,"IfcSpace":20,"IfcBuildingElementProxy":200},"total_products":1571},"n":33},{"id":"G12-beam-loadbearing","model":"sixty5/str.ifc","instruction":"Mark all beams as load-bearing in their property sets.","context":{"schema":"IFC2X3","units":"millimetre","storeys":[{"name":"00 begane grond","elevation":-5.41433564649196e-13,"elements":328},{"name":"01 eerste verdieping","elevation":4500.00000000004,"elements":59},{"name":"02 tweede verdieping","elevation":7700.00000000004,"elements":82},{"name":"03 derde verdieping","elevation":10900.0,"elements":82},{"name":"04 vierde verdieping","elevation":14100.0,"elements":74},{"name":"05 vijfde verdieping","elevation":17300.0,"elements":74},{"name":"06 zesde verdieping","elevation":20500.0,"elements":74},{"name":"07 zevende verdieping","elevation":23700.0,"elements":77},{"name":"08 achtste verdieping","elevation":26900.0,"elements":77},{"name":"09 negende verdieping","elevation":30100.0000000003,"elements":67},{"name":"10 tiende verdieping","elevation":33300.0000000003,"elements":67},{"name":"11 elfde verdieping","elevation":36500.0000000003,"elements":55},{"name":"12 twaalfde verdieping","elevation":39700.0000000003,"elements":55},{"name":"13 dertiende verdieping","elevation":42900.0000000003,"elements":53},{"name":"14 veertiende verdieping","elevation":46100.0000000003,"elements":39},{"name":"15 vijftiende verdieping","elevation":49300.0000000027,"elements":45},{"name":"16 zestiende verdieping","elevation":52500.0000000003,"elements":30},{"name":"17 zeventiende verdieping","elevation":55700.0000000003,"elements":43},{"name":"18 achttiende verdieping","elevation":63000.0000000032,"elements":1}],"counts":{"IfcWall":3,"IfcSlab":70,"IfcColumn":387,"IfcBeam":354,"IfcBuildingElementProxy":1},"total_products":2687},"n":34},{"id":"G15-kitchen-units","model":"sixty5/kitchen.ifc","instruction":"Update the kitchen units to the new specification.","context":{"schema":"IFC2X3","units":"millimetre","storeys":[{"name":"00 begane grond","elevation":0.0,"elements":197},{"name":"01 eerste verdieping","elevation":4500.0,"elements":280},{"name":"02 tweede verdieping","elevation":7700.0,"elements":280},{"name":"03 derde verdieping","elevation":10900.0,"elements":280},{"name":"04 vierde verdieping","elevation":14100.0,"elements":224},{"name":"05 vijfde verdieping","elevation":17300.0,"elements":224},{"name":"06 zesde verdieping","elevation":20500.0,"elements":224},{"name":"07 zevende verdieping","elevation":23700.0,"elements":258},{"name":"08 achtste verdieping","elevation":26900.0,"elements":228},{"name":"09 negende verdieping","elevation":30100.0,"elements":194},{"name":"10 tiende verdieping","elevation":33300.0,"elements":172},{"name":"11 elfde verdieping","elevation":36500.0,"elements":138},{"name":"12 twaalfde verdieping","elevation":39700.0,"elements":116},{"name":"13 dertiende verdieping","elevation":42900.0,"elements":140},{"name":" 14  veertiende verdieping","elevation":46100.0,"elements":56},{"name":"15 vijftiende verdieping","elevation":49300.0,"elements":88}],"counts":{"IfcBuildingElementProxy":3098},"total_products":3117},"n":35},{"id":"D2-reassign-wall-type","model":"sixty5/facade.ifc","instruction":"All walls on floors 10 through 17 should use the same wall type as the walls on floor 09.","context":{"schema":"IFC2X3","units":"millimetre","storeys":[{"name":"00 begane grond","elevation":0.0,"elements":26},{"name":"01 eerste verdieping","elevation":4500.0,"elements":65},{"name":"02 tweede verdieping","elevation":7700.0,"elements":66},{"name":"03 derde verdieping","elevation":10900.0,"elements":66},{"name":"04 vierde verdieping","elevation":14100.0,"elements":66},{"name":"05 vijfde verdieping","elevation":17300.0,"elements":66},{"name":"06 zesde verdieping","elevation":20500.0,"elements":66},{"name":"07 zevende verdieping","elevation":23700.0,"elements":74},{"name":"08 achtste verdieping","elevation":26900.0,"elements":72},{"name":"09 negende verdieping","elevation":30100.0,"elements":67},{"name":"10 tiende verdieping","elevation":33300.0,"elements":66},{"name":"11 elfde verdieping","elevation":36500.0,"elements":61},{"name":"12 twaalfde verdieping","elevation":39700.0,"elements":68},{"name":"13 dertiende verdieping","elevation":42900.0,"elements":57},{"name":"14 veertiende verdieping","elevation":46100.0,"elements":37},{"name":"15 vijftiende verdieping","elevation":49300.0,"elements":55},{"name":"16 zestiende verdieping","elevation":52500.0,"elements":56},{"name":"17 dak","elevation":55700.0,"elements":21}],"counts":{"IfcWall":353,"IfcBuildingElementProxy":702},"total_products":1075},"n":36}]</script>
+<script>
+var TASKS = JSON.parse(document.getElementById('payload').textContent);
+var KEY = 'ifc-task-review-v1';
+var state = load();
+var idx = 0;
+
+function load(){
+  try{ var raw = localStorage.getItem(KEY); if(raw) return JSON.parse(raw); }catch(e){}
+  return {reviewer:'', started:new Date().toISOString(), answers:{}};
+}
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
+
+var Q = [
+  {k:'clarity', t:'Could a modeller act on this without asking you a question?',
+   h:'Judge the wording, not the difficulty.',
+   o:[['clear','Yes, it is unambiguous',''],
+      ['ambiguous','Mostly, but they would have to make a judgement call',''],
+      ['unanswerable','No, it cannot be answered as written','Something is missing, contradictory, or refers to something absent from the model.']]},
+  {k:'variants', t:'How many materially different results would you accept as correct?',
+   h:'Two results differing only in trivia count as one. Two a reviewer would treat differently count as separate.',
+   o:[['one','Essentially one',''],
+      ['few','Two or three defensible answers',''],
+      ['many','Many. The request does not pin it down','']]},
+  {k:'realistic', t:'Would this be asked on a real project?', h:'',
+   o:[['yes','Yes, routinely',''],
+      ['plausible','Contrived, but the underlying need is real',''],
+      ['no','No, nobody would ask this','']]},
+  {k:'varies', t:'If more than one answer is acceptable, what differs between them?', ta:true,
+   h:'Leave blank if there is only one right answer.'},
+  {k:'wrong', t:'Anything wrong with the task itself?', ta:true,
+   h:'Impossible, self-contradictory, or odd. Blank is fine.'}
+];
+
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){
+  return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]; }); }
+
+function ctxHtml(c){
+  var st = c.storeys.map(function(s){
+    return '<tr><td>'+esc(s.name)+'</td><td class="n">'+esc(s.elevation)+'</td><td class="n">'+s.elements+'</td></tr>';
+  }).join('');
+  var tags = Object.keys(c.counts).map(function(k){
+    return '<i>'+esc(k.slice(3)).toLowerCase()+'&nbsp;'+c.counts[k]+'</i>';
+  }).join('');
+  return '<details><summary>Model contents: '+c.storeys.length+
+    ' storey'+(c.storeys.length===1?'':'s')+', '+c.total_products+' elements</summary>'+
+    '<table><tr><th>storey</th><th class="n">elevation</th><th class="n">elements</th></tr>'+st+'</table>'+
+    '<div class="tags">'+tags+'</div></details>';
+}
+
+function render(){
+  var app = document.getElementById('app');
+  if(idx >= TASKS.length) return renderEnd(app);
+  var t = TASKS[idx], a = state.answers[t.id] || {};
+  var h = '<div class="row"><div class="rail">'+
+    '<div class="num">'+String(t.n).padStart(2,'0')+'</div>'+
+    '<div class="of">of '+TASKS.length+'</div>'+
+    '<dl><dt>model</dt><dd>'+esc(t.model.split('/')[0])+'</dd>'+
+    '<dd>'+esc(t.context.schema.toLowerCase())+'</dd>'+
+    '<dd>'+esc(t.context.units)+'</dd></dl></div><div class="main">';
+
+  if(idx === 0){
+    h += '<div class="q"><h3><em>00</em>Your name</h3>'+
+         '<span class="hint">For the record.</span>'+
+         '<input type="text" id="rev" value="'+esc(state.reviewer)+'" placeholder="name"></div>';
+  }
+
+  h += '<p class="brief">'+esc(t.instruction)+'</p>';
+  h += ctxHtml(t.context);
+
+  Q.forEach(function(q,i){
+    h += '<div class="q"><h3><em>'+(i+1)+'</em>'+q.t+'</h3>';
+    if(q.h) h += '<span class="hint">'+q.h+'</span>';
+    if(q.ta){
+      h += '<textarea data-k="'+q.k+'">'+esc(a[q.k]||'')+'</textarea>';
+    } else {
+      h += '<div class="opts">';
+      q.o.forEach(function(o){
+        var sel = a[q.k]===o[0] ? ' sel' : '';
+        h += '<label class="opt'+sel+'"><input type="radio" name="'+q.k+'" value="'+o[0]+'"'+
+             (sel?' checked':'')+'><span class="box"></span><span><span class="t">'+o[1]+'</span>'+
+             (o[2]?'<span class="d">'+o[2]+'</span>':'')+'</span></label>';
+      });
+      h += '</div>';
+    }
+    h += '</div>';
+  });
+  h += '</div></div>';
+
+  app.innerHTML = h;
+  wire(t);
+  document.getElementById('prev').disabled = idx===0;
+  document.getElementById('next').disabled = false;
+  document.getElementById('next').innerHTML = idx===TASKS.length-1 ? 'finish &rarr;' : 'next &rarr;';
+  updateBar(); window.scrollTo(0,0);
+}
+
+function wire(t){
+  var app = document.getElementById('app');
+  var rev = document.getElementById('rev');
+  if(rev) rev.oninput = function(){ state.reviewer = rev.value; save(); };
+  app.querySelectorAll('input[type=radio]').forEach(function(el){
+    el.onchange = function(){
+      var a = state.answers[t.id] = state.answers[t.id] || {};
+      a[el.name] = el.value; a.at = new Date().toISOString();
+      el.closest('.opts').querySelectorAll('.opt').forEach(function(l){ l.classList.remove('sel'); });
+      el.closest('.opt').classList.add('sel');
+      save(); updateBar();
+    };
+  });
+  app.querySelectorAll('textarea').forEach(function(el){
+    el.oninput = function(){
+      var a = state.answers[t.id] = state.answers[t.id] || {};
+      a[el.dataset.k] = el.value; save();
+    };
+  });
+}
+
+function complete(id){ var a = state.answers[id]; return !!(a && a.clarity && a.variants && a.realistic); }
+function nDone(){ return TASKS.filter(function(t){ return complete(t.id); }).length; }
+function updateBar(){
+  var n = nDone();
+  document.getElementById('top').style.width = (100*n/TASKS.length)+'%';
+  document.getElementById('cnt').textContent = n+' / '+TASKS.length+' answered';
+}
+
+function renderEnd(app){
+  var n = nDone();
+  var map = TASKS.map(function(t,i){
+    return '<b class="'+(complete(t.id)?'f':'')+'" data-i="'+i+'" title="'+esc(t.model)+'">'+t.n+'</b>';
+  }).join('');
+  app.innerHTML = '<div class="end"><h2>'+(n===TASKS.length?'Complete':'Not finished')+'</h2>'+
+    '<p>'+n+' of '+TASKS.length+' reviewed.'+(n<TASKS.length?
+      ' Filled squares are done. Click any number to go back to it.':
+      ' Thanks.')+'</p>'+
+    '<div class="map">'+map+'</div>'+
+    '<button class="get" id="dl">download results</button>'+
+    '<p class="fine">Saves a .json file, send it to morgane.</p></div>';
+  app.querySelectorAll('.map b').forEach(function(b){
+    b.onclick = function(){ idx = +b.dataset.i; render(); };
+  });
+  document.getElementById('dl').onclick = download;
+  document.getElementById('prev').disabled = false;
+  document.getElementById('next').disabled = true;
+  updateBar();
+}
+
+function download(){
+  var out = {
+    reviewer: state.reviewer || null, started: state.started,
+    submitted: new Date().toISOString(), n_tasks: TASKS.length, n_reviewed: nDone(),
+    responses: TASKS.map(function(t){
+      var a = state.answers[t.id] || {};
+      return {n:t.n, id:t.id, model:t.model, instruction:t.instruction,
+              clarity:a.clarity||null, variants:a.variants||null, realistic:a.realistic||null,
+              varies:a.varies||'', wrong:a.wrong||'', answered_at:a.at||null};
+    })
+  };
+  var blob = new Blob([JSON.stringify(out,null,1)],{type:'application/json'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'bim-task-review-'+(state.reviewer||'anon').toLowerCase().replace(/[^a-z0-9]+/g,'-')+'.json';
+  document.body.appendChild(a); a.click();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },1000);
+}
+
+document.getElementById('next').onclick = function(){ if(idx<TASKS.length){ idx++; render(); } };
+document.getElementById('prev').onclick = function(){ if(idx>0){ idx--; render(); } };
+render();
+</script>
+</body>
+</html>
