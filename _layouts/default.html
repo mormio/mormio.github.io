@@ -3,13 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{ page.title }}</title>
+  <title>{{ page.title | default: site.title }}</title>
   <link rel="stylesheet" href="{{ "/assets/css/style.css" | relative_url }}">
   <style>
     body {
       padding-left: 1in;
       padding-right: 1in;
       padding-top: 0.8in;
+    }
+    @media (max-width: 900px) {
+      body { padding-left: 1.1rem; padding-right: 1.1rem; padding-top: 2rem; }
     }
     .circle-image {
       width: 150px; /* Controls the size */

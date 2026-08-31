@@ -8,7 +8,6 @@ main {
   padding-right: 2in;
 }
 
-/* Or if you want to target specific elements */
-h3, p {
-  padding-left: 2in;
+@media (max-width: 900px) {
+  main { padding-left: 0; padding-right: 0; }
 }
