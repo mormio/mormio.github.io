@@ -3,6 +3,8 @@ layout: default
 title: Morgane Moss
 ---
 
+<img src="/assets/portrait.jpg" alt="Morgane Moss" class="portrait" width="84" height="84">
+
 # morgane moss
 
 We've found each other! I am an applied ML researcher and engineer, specializing in reinforcement learning for reasoning and agentic models. I'm currently a member of technical staff in the [Nous Research](https://hermes-agent.nousresearch.com/) post-training team. 
