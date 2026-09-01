@@ -5,7 +5,7 @@ title: Morgane Moss
 
 # morgane moss
 
-I am an applied ML researcher and engineer, specializing in reinforcement learning for reasoning and agentic models. I work in the post-training team at [Nous Research](https://hermes-agent.nousresearch.com/). 
+I am an applied ML researcher and engineer, specializing in reinforcement learning for reasoning and agentic models. I'm in the post-training team at [Nous Research](https://hermes-agent.nousresearch.com/). 
 
 I work on credit assignment and search for long-horizon tasks such as deep research. I am also interested in unlocking synthetic data generation. I was advised by Rishabh Agarwal and Aaron Courville at Mila, and Alessandro Sordoni at Microsoft Research. I arrived at RL from computational neuroscience, modelling optimal policy learning in natural neural networks.
 
